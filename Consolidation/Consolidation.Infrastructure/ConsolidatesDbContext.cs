@@ -11,11 +11,15 @@ namespace Consolidation.Infrastructure
         public ConsolidatesDbContext(DbContextOptions<ConsolidatesDbContext> options) : base(options) { }
 
         public DbSet<DailyConsolidate> DailyConsolidate { get; set; }    // Todo change only to set after test
+        public DbSet<ProcessedEvent> ProcessedEvent { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<DailyConsolidate>()
                 .HasKey(x => x.Date);
+
+            modelBuilder.Entity<ProcessedEvent>()
+                .HasKey(x => x.EventId);
         }
     }
 }

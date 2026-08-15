@@ -1,6 +1,7 @@
 ﻿using Consolidation.Application.Interfaces;
 using Consolidation.Application.Responses;
 using Consolidation.Domain.Interfaces;
+using Consolidation.Infrastructure.Interfaces;
 using Shared.Domain.Entities;
 using Shared.Domain.Enums;
 using Shared.Enums;
@@ -13,17 +14,36 @@ namespace Consolidation.Application
     public class ConsolidateManager : IConsolidateManager
     {
         private readonly IDailyConsolidateRepository _dailyConsolidateRepository;
+        private readonly IProcessedEventRepository _processedEventRepository;
+        private readonly IConsolidateUnitOfWork _consolidateUnitOfWork;
 
-        public ConsolidateManager(IDailyConsolidateRepository dailyConsolidateRepository)
+        public ConsolidateManager(
+            IDailyConsolidateRepository dailyConsolidateRepository,
+            IProcessedEventRepository processedEventRepository,
+            IConsolidateUnitOfWork consolidateUnitOfWork
+            )
         {
             _dailyConsolidateRepository = dailyConsolidateRepository;
+            _processedEventRepository = processedEventRepository;
+            _consolidateUnitOfWork = consolidateUnitOfWork;
         }
 
         public async Task ConsolidateTransaction(ProcessTransaction processTransaction)
         {
+            // idempotency validator
+            if (await _processedEventRepository.IsProcessedAsync(processTransaction.EventId))
+                return;
+
+
             var processAmount = ResolveAmount(processTransaction);
 
-            await _dailyConsolidateRepository.Process(processTransaction.Date, processAmount);
+            await _consolidateUnitOfWork.DailyConsolidateRepository.Process(processTransaction.Date, processAmount);
+            await _consolidateUnitOfWork.ProcessedEventRepository.RegisterProcessedAsync(processTransaction.EventId);
+
+            await _consolidateUnitOfWork.SaveChangesAsync();
+
+            //await _dailyConsolidateRepository.Process(processTransaction.Date, processAmount);
+            //await _processedEventRepository.RegisterProcessedAsync(processTransaction.EventId);
         }
 
         public async Task<ConsolidationResponse> GetConsolidate(DateOnly date)

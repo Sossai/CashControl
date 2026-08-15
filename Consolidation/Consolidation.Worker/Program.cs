@@ -2,6 +2,7 @@ using Consolidation.Application;
 using Consolidation.Application.Interfaces;
 using Consolidation.Domain.Interfaces;
 using Consolidation.Infrastructure;
+using Consolidation.Infrastructure.Interfaces;
 using Consolidation.Infrastructure.Repository;
 using Consolidation.Worker;
 using Consolidation.Worker.Consumer;
@@ -15,7 +16,10 @@ var builder = Host.CreateApplicationBuilder(args);
 //builder.Services.AddHostedService<Worker>();
 
 builder.Services.AddScoped<IDailyConsolidateRepository, DailyConsolidateRepository>();
+builder.Services.AddScoped<IProcessedEventRepository, ProcessedEventRepository>();
 builder.Services.AddScoped<IConsolidateManager, ConsolidateManager>();
+builder.Services.AddScoped<IProcessedEventRepository, ProcessedEventRepository>();
+builder.Services.AddScoped<IConsolidateUnitOfWork, ConsolidateUnitOfWork>();
 
 
 builder.Services.AddMassTransit(x =>

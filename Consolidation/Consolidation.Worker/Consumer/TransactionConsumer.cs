@@ -23,17 +23,6 @@ namespace Consolidation.Worker.Consumer
 
             await _consolidateManager.ConsolidateTransaction(message);
 
-            Console.WriteLine(
-                $"Processando lançamento {message.EventId}");
-
-            Console.WriteLine(
-                $"Valor: {message.Amount}");
-
-            Console.WriteLine(
-                $"Data: {message.Date}");
-
-            // Processamento
-            // Atualizar DailyConsolidate, por exemplo.
 
             await Task.CompletedTask;
         }

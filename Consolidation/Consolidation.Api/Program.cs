@@ -2,6 +2,7 @@ using Consolidation.Application;
 using Consolidation.Application.Interfaces;
 using Consolidation.Domain.Interfaces;
 using Consolidation.Infrastructure;
+using Consolidation.Infrastructure.Interfaces;
 using Consolidation.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using System.Transactions;
@@ -16,6 +17,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IConsolidateManager, ConsolidateManager>();
 builder.Services.AddScoped<IDailyConsolidateRepository, DailyConsolidateRepository>();
+builder.Services.AddScoped<IProcessedEventRepository, ProcessedEventRepository>();
+builder.Services.AddScoped<IConsolidateUnitOfWork, ConsolidateUnitOfWork>();
 
 builder.Services.AddDbContext<ConsolidatesDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
