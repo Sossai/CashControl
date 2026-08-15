@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cashcontrol-postgres
+    environment:
+      POSTGRES_USER: cashcontrol
+      POSTGRES_PASSWORD: cashcontrol
+      POSTGRES_DB: cashcontrol_transactions
+    ports:
+      - "5432:5432"
+    volumes:
+      - cashcontrol-postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cashcontrol -d cashcontrol_transactions"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - cashcontrol-network
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: cashcontrol-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: cashcontrol
+      RABBITMQ_DEFAULT_PASS: cashcontrol
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # management UI (http://localhost:15672)
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cashcontrol-network
+
+volumes:
+  cashcontrol-postgres-data:
+
+networks:
+  cashcontrol-network:
+    driver: bridge
