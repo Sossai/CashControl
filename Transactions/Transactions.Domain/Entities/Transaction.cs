@@ -7,7 +7,7 @@ namespace Transactions.Domain.Entities
 {
     public class Transaction
     {
-        public Guid Id { get; private set; }
+        public Guid Id { get; set; }
         public DateOnly Date { get; private set; }
         public TransactionType Type { get; private set; }
         public decimal Amount { get; private set; }

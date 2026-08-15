@@ -8,6 +8,7 @@ namespace Shared.Enums
     {
         INTERNAL_ERROR = 1,
         COULDNOT_STORE_DATA = 2,
+        DATA_NOT_FOUND = 3,
         MISSING_REQUIRED_INFORMATION = 4
     }
 }
