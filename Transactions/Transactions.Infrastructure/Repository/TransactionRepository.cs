@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Transactions.Domain.Entities;
+﻿using Transactions.Domain.Entities;
 using Transactions.Domain.Interfaces;
 
 

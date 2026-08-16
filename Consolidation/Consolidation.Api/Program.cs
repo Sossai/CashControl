@@ -5,14 +5,12 @@ using Consolidation.Infrastructure;
 using Consolidation.Infrastructure.Interfaces;
 using Consolidation.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
-using System.Transactions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer(); // Required for endpoint discovery
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IConsolidateManager, ConsolidateManager>();
@@ -21,7 +19,17 @@ builder.Services.AddScoped<IProcessedEventRepository, ProcessedEventRepository>(
 builder.Services.AddScoped<IConsolidateUnitOfWork, ConsolidateUnitOfWork>();
 
 builder.Services.AddDbContext<ConsolidatesDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        npgsqlOptions =>
+        {
+            npgsqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 3,
+                maxRetryDelay: TimeSpan.FromSeconds(5),
+                errorCodesToAdd: null);
+        });
+});
 
 var app = builder.Build();
 

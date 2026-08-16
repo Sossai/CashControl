@@ -1,16 +1,24 @@
+using FluentValidation;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Transactions.Application;
 using Transactions.Application.Interfaces;
+using Transactions.Application.Validators;
 using Transactions.Domain.Interfaces;
 using Transactions.Infrastructure;
 using Transactions.Infrastructure.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.DefaultIgnoreCondition =
+            System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
+
 
 builder.Services.AddEndpointsApiExplorer(); // Required for endpoint discovery
 builder.Services.AddSwaggerGen();
@@ -18,9 +26,20 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ITransactionManager, TransactionManager>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 
-builder.Services.AddDbContext<TransactionsDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterTransactionValidator>();
 
+builder.Services.AddDbContext<TransactionsDbContext>(options =>
+{
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        npgsqlOptions =>
+        {
+            npgsqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 3,
+                maxRetryDelay: TimeSpan.FromSeconds(5),
+                errorCodesToAdd: null);
+        });
+});
 
 builder.Services.AddMassTransit(x =>
 {

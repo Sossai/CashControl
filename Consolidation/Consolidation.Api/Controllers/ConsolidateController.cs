@@ -1,5 +1,6 @@
 ﻿using Consolidation.Application;
 using Consolidation.Application.Interfaces;
+using Consolidation.Application.Responses;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Enums;
 
@@ -16,7 +17,7 @@ namespace Consolidation.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<Decimal>> GetConsolidate(DateOnly dateOnly)
+        public async Task<ActionResult<ConsolidationResponse>> GetConsolidate(DateOnly dateOnly)
         {
             try
             {
@@ -32,7 +33,12 @@ namespace Consolidation.Api.Controllers
             }
             catch(Exception)
             {
-                return Problem(detail: "Internal server error.", statusCode: 500);
+                return StatusCode(500, new ConsolidationResponse
+                {
+                    Success = false,
+                    ErrorCode = ErrorCodes.INTERNAL_ERROR,
+                    Message = "Internal error."
+                });
             }
         }
     }

@@ -6,7 +6,8 @@ namespace Shared.Domain.Enums
 {
     public enum TransactionType
     {
-        Credit = 0,
-        Debit = 1
+        None = 0,
+        Credit = 1,
+        Debit = 2
     }
 }

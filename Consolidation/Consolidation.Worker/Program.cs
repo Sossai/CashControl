@@ -13,14 +13,12 @@ using System.Transactions;
 
 
 var builder = Host.CreateApplicationBuilder(args);
-//builder.Services.AddHostedService<Worker>();
 
 builder.Services.AddScoped<IDailyConsolidateRepository, DailyConsolidateRepository>();
 builder.Services.AddScoped<IProcessedEventRepository, ProcessedEventRepository>();
 builder.Services.AddScoped<IConsolidateManager, ConsolidateManager>();
 builder.Services.AddScoped<IProcessedEventRepository, ProcessedEventRepository>();
 builder.Services.AddScoped<IConsolidateUnitOfWork, ConsolidateUnitOfWork>();
-
 
 builder.Services.AddMassTransit(x =>
 {
@@ -46,9 +44,18 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-
 builder.Services.AddDbContext<ConsolidatesDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        npgsqlOptions =>
+        {
+            npgsqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 3,
+                maxRetryDelay: TimeSpan.FromSeconds(5),
+                errorCodesToAdd: null);
+        });
+});
 
 var host = builder.Build();
 host.Run();

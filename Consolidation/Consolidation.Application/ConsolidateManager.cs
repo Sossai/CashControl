@@ -34,16 +34,12 @@ namespace Consolidation.Application
             if (await _processedEventRepository.IsProcessedAsync(processTransaction.EventId))
                 return;
 
-
             var processAmount = ResolveAmount(processTransaction);
 
             await _consolidateUnitOfWork.DailyConsolidateRepository.Process(processTransaction.Date, processAmount);
             await _consolidateUnitOfWork.ProcessedEventRepository.RegisterProcessedAsync(processTransaction.EventId);
 
             await _consolidateUnitOfWork.SaveChangesAsync();
-
-            //await _dailyConsolidateRepository.Process(processTransaction.Date, processAmount);
-            //await _processedEventRepository.RegisterProcessedAsync(processTransaction.EventId);
         }
 
         public async Task<ConsolidationResponse> GetConsolidate(DateOnly date)

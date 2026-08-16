@@ -5,14 +5,15 @@ services:
     environment:
       POSTGRES_USER: cashcontrol
       POSTGRES_PASSWORD: cashcontrol
-      POSTGRES_DB: cashcontrol_transactions
+      POSTGRES_DB: cashcontrol
     ports:
       - "5432:5432"
     volumes:
       - cashcontrol-postgres-data:/var/lib/postgresql/data
-      - ./docker/postgres/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
+      - ./docker/postgres/01-init-databases.sh:/docker-entrypoint-initdb.d/01-init-databases.sh:ro
+      - ./docker/postgres/02-create-tables.sh:/docker-entrypoint-initdb.d/02-create-tables.sh:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U cashcontrol -d cashcontrol_transactions"]
+      test: ["CMD-SHELL", "pg_isready -U cashcontrol -d cashcontrol"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -35,6 +36,17 @@ services:
       retries: 5
     networks:
       - cashcontrol-network
+
+  # As três aplicações .NET (Transactions.Api, Consolidation.Worker, Consolidation.Api)
+  # rodam direto pela IDE/dotnet run durante o desenvolvimento local, não pelo compose.
+  # Os Dockerfiles (Dockerfile.transactions-api, Dockerfile.consolidation-api,
+  # Dockerfile.consolidation-worker) continuam no repo para build/publicação futura;
+  # para usá-los aqui de novo, é só devolver os três blocos de serviço removidos.
+  #
+  # Connection strings para rodar as apps localmente (fora do Docker), apontando
+  # para as portas publicadas acima:
+  #   Postgres: Host=localhost;Port=5432;Database=cashcontrol;Username=cashcontrol;Password=cashcontrol
+  #   RabbitMQ: Host=localhost;Port=5672;Username=cashcontrol;Password=cashcontrol
 
 volumes:
   cashcontrol-postgres-data:

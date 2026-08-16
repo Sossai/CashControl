@@ -7,6 +7,6 @@ namespace Transactions.Infrastructure
     {
         public TransactionsDbContext(DbContextOptions<TransactionsDbContext> options) : base(options) { }
 
-        public DbSet<Transaction> Transactions { get; set; }    // Todo change only to set after test
+        public DbSet<Transaction> Transactions { get; set; }
     }
 }

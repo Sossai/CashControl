@@ -7,6 +7,6 @@ namespace Transactions.Application.Responses
 {
     public class TransactionResponse : Response
     {
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
     }
 }

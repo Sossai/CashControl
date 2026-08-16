@@ -16,8 +16,6 @@ namespace Transactions.Domain.Entities
 
         public static Transaction Create(DateOnly date, TransactionType type, decimal amount, string description)
         {
-            // Todo : Validate data
-
             return new Transaction
             {
                 Id = Guid.NewGuid(),

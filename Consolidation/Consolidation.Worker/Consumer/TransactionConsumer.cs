@@ -23,7 +23,6 @@ namespace Consolidation.Worker.Consumer
 
             await _consolidateManager.ConsolidateTransaction(message);
 
-
             await Task.CompletedTask;
         }
     }

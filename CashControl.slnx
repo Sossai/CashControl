@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path="docker-compose.yml" />
+    <File Path="README.md" />
   </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/Consolidation/">
@@ -19,5 +20,8 @@
     <Project Path="Transactions/Transactions.Domain/Transactions.Domain.csproj" />
     <Project Path="Transactions/Transactions.Infrastructure/Transactions.Infrastructure.csproj" Id="d701b612-2ea1-4378-9059-986bf78ea5f3" />
   </Folder>
-  <Folder Name="/tests/" />
+  <Folder Name="/tests/">
+    <Project Path="ConsolidationTests/ConsolidationTests.csproj" Id="156a96b5-dded-488e-b3e8-2b1d9ca5045d" />
+    <Project Path="Transactions/TransactionTests/TransactionTests.csproj" Id="364c3ab6-2249-41da-a6b5-4ec0e3afb284" />
+  </Folder>
 </Solution>
