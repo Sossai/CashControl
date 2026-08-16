@@ -9,8 +9,10 @@
 * [.NET 10.0](https://dotnet.microsoft.com/)
 * [ASP.NET Core Web API](https://microsoft.com)
 * [Entity Framework Core](https://microsoft.com) (ORM)
+* [xUnit Test]
 * [PostgreSQL] (Banco de dados)
 * [RabbitMQ] (Mensageria)
+* [Docker] (Container)
 
 ---
 
@@ -40,7 +42,7 @@ Swagger :
 
 5. **Para enviar uma transação, acesse o swagger da aplicação Transactions.Api e clique em "Try it out" em seguida altere os valores como o exemplo abaixo e clique em Execute**
 
-   ![Execute](./assets/transactions_api_1)
+   ![Execute](./assets/transactions_api_1.png)
 
    ```bash
     {
@@ -88,14 +90,14 @@ flowchart TD
 
     subgraph TX["Transactions context"]
         TxApi["Transactions.Api<br/>POST /transactions"]
-        TxDb[("Transactions DB<br/>Transactions")]
+        TxDb[("cashcontrol DB<br/>Transactions")]
     end
 
     Queue{{"RabbitMQ<br/>"}}
 
     subgraph CONS["Consolidation context"]
         Worker["Consolidation.Worker<br/>"]
-        ConDb[("Consolidation DB<br/>DailyConsolidate + ProcessedEvent")]
+        ConDb[("cashcontrol DB<br/>DailyConsolidate + ProcessedEvent")]
         ConApi["Consolidation.Api<br/>GET /Consolidate"]
     end
 
