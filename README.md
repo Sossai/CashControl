@@ -40,7 +40,7 @@ Swagger :
 - registro das transações => http://localhost:5098/swagger/index.html 
 - consulta consolidado : http://localhost:5198/swagger/index.html
 
-5. **Para enviar uma transação, acesse o swagger da aplicação Transactions.Api e clique em "Try it out" em seguida altere os valores como o exemplo abaixo e clique em Execute**
+5. **Para enviar uma transação, acesse o swagger da aplicação Transactions.Api e clique em "Try it out" em seguida altere os valores como o exemplo abaixo e clique em Execute.**
 
    ![Execute](./assets/transactions_api_1.png)
 
@@ -51,6 +51,11 @@ Swagger :
         "amount": 100,
         "description": "Adiconando 100 de Crédito"
     }
+   ```
+
+   ```bash
+   type = 1 ==> Credit
+   type = 2 ==> Debit
    ```
 
 6. **Para consultar um valor consolidado, acesse o swagger da aplicação Consolidation.Api e clique em "Try it out" em seguida preencha o campo com a data que deseja consultar e clique em Execute**
