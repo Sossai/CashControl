@@ -127,11 +127,13 @@ flowchart TD
 
 ## 📋 Melhorias e débitos técnicos
 
-
+```text
 1. **Implementar o pattern Transacional outbox:** Gravar em banco tanto o lançamento(transaction) quanto o evento na mesma transação. Um processo rodando em background recupera os evento do banco e publica na mensageria. 
 Objetivo de garantir que tudo que foi persistido no banco Transaction seja publicado na mensageria.
 2. **Implementar uso do Redis:** Salvar o valor consolidado no Redis para um melhor desempenho e não precisa bater no banco constantemente.
 3. **Implementar DLQ:** Implementar uso da Dead Letter Queue.
 5. **Logs e Observabilidade:**
 6. **Controle de cobertura de código:**
-7. **Aplicar regra de TTL no banco para evitar crescimento sem controle:** 
+7. **Aplicar regra de TTL no banco para evitar crescimento sem controle:**
+8. **Implementar controle de autenticação e autorizacão:** 
+```
