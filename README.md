@@ -23,7 +23,7 @@
    git clone https://github.com/Sossai/CashControl
    ```
 
-2. **Subir docker contendo a estrutura de banco (PostgreSQL) e mensageria (RabbitMQ ):**
+2. **Subir docker contendo a estrutura de banco (PostgreSQL) e mensageria (RabbitMQ):**
    ```bash
    docker compose up -d
    ```
@@ -34,7 +34,7 @@
    Update-Database -Project Consolidation.Infrastructure -StartupProject Consolidation.Api
    ```
 
-   ![Estrutura de banco criada](./assets/estrutura_banco)
+   ![Estrutura de banco criada](./assets/estrutura_banco.png)
 
 4. **Configure o Visual Studio para executar múltiplos startups:**
 
