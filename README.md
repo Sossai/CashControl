@@ -28,6 +28,8 @@
    docker compose up -d
    ```
 
+   ![Docker](./assets/docker.png)
+   
 3. **Abrir o Package Manager Console do Visual Studio e aplicar as migrações:**
    ```bash
    Update-Database -Project Transactions.Infrastructure -StartupProject Transactions.Api	
