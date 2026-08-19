@@ -1,5 +1,6 @@
 ﻿using Transactions.Domain.Entities;
 using Transactions.Domain.Interfaces;
+using Transactions.Infrastructure.Entities;
 
 
 namespace Transactions.Infrastructure.Repository
@@ -18,6 +19,11 @@ namespace Transactions.Infrastructure.Repository
             _transactionsDbContext.Transactions.Add(transaction);
             await _transactionsDbContext.SaveChangesAsync();
             return transaction.Id;
+        }
+
+        public async Task AddAsync(Transaction transaction)
+        {
+            _transactionsDbContext.Transactions.Add(transaction);
         }
     }
 }

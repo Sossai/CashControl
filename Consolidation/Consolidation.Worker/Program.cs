@@ -4,12 +4,12 @@ using Consolidation.Domain.Interfaces;
 using Consolidation.Infrastructure;
 using Consolidation.Infrastructure.Interfaces;
 using Consolidation.Infrastructure.Repository;
-using Consolidation.Worker;
 using Consolidation.Worker.Consumer;
+using Consolidation.Worker.HealthCheck;
 using MassTransit;
+using MassTransit.Configuration;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
-using Shared.Domain.Entities;
-using System.Transactions;
 
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -57,5 +57,15 @@ builder.Services.AddDbContext<ConsolidatesDbContext>(options =>
         });
 });
 
+builder.Services.AddHostedService<HealthCheckServer>();
+builder.Services.AddHealthChecks();
+
+
+
+
+
+
 var host = builder.Build();
+
+
 host.Run();

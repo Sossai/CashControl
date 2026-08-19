@@ -4,12 +4,28 @@ using Consolidation.Domain.Interfaces;
 using Consolidation.Infrastructure;
 using Consolidation.Infrastructure.Interfaces;
 using Consolidation.Infrastructure.Repository;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.DefaultIgnoreCondition =
+            System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
 
-builder.Services.AddControllers();
+builder.Services
+    .AddHealthChecks()
+    .AddNpgSql(
+        builder.Configuration.GetConnectionString("DefaultConnection")!,
+        name: "postgres",
+        tags: ["ready"]);
+    //.AddCheck<RabbitMqHealthCheck>(
+    //    "rabbitmq",
+    //    tags: ["ready"]);
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -44,5 +60,38 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = _ => false
+});
+
+app.MapHealthChecks(
+    "/health/ready",
+    new HealthCheckOptions
+    {
+        Predicate = _ => true,
+
+        ResponseWriter = async (context, report) =>
+        {
+            context.Response.ContentType =
+                "application/json";
+
+            var response = new
+            {
+                status = report.Status.ToString(),
+
+                checks = report.Entries.Select(x => new
+                {
+                    name = x.Key,
+                    status = x.Value.Status.ToString(),
+                    description = x.Value.Description
+                })
+            };
+
+            await context.Response.WriteAsJsonAsync(
+                response);
+        }
+    });
 
 app.Run();

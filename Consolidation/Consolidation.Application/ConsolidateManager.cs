@@ -5,9 +5,6 @@ using Consolidation.Infrastructure.Interfaces;
 using Shared.Domain.Entities;
 using Shared.Domain.Enums;
 using Shared.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Consolidation.Application
 {
@@ -36,10 +33,11 @@ namespace Consolidation.Application
 
             var processAmount = ResolveAmount(processTransaction);
 
-            await _consolidateUnitOfWork.DailyConsolidateRepository.Process(processTransaction.Date, processAmount);
-            await _consolidateUnitOfWork.ProcessedEventRepository.RegisterProcessedAsync(processTransaction.EventId);
-
-            await _consolidateUnitOfWork.SaveChangesAsync();
+            await _consolidateUnitOfWork.ExecuteInTransactionAsync(async () =>
+            {
+                await _dailyConsolidateRepository.Process(processTransaction.Date, processAmount);
+                await _processedEventRepository.RegisterProcessedAsync(processTransaction.EventId);
+            });
         }
 
         public async Task<ConsolidationResponse> GetConsolidate(DateOnly date)
@@ -66,13 +64,12 @@ namespace Consolidation.Application
             }; 
         }
 
-        private static decimal ResolveAmount(ProcessTransaction processTransaction)
+        public static decimal ResolveAmount(ProcessTransaction processTransaction)
         {
             if (processTransaction.Type == TransactionType.Debit)
                 return processTransaction.Amount * -1;
 
             return processTransaction.Amount;
         }
-
     }
 }

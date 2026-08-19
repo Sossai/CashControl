@@ -2,9 +2,6 @@
 using Consolidation.Application.Interfaces;
 using MassTransit;
 using Shared.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Consolidation.Worker.Consumer
 {

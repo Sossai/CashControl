@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
     <PackageReference Include="FlexLabs.EntityFrameworkCore.Upsert" Version="10.1.0" />
     <PackageReference Include="MassTransit" Version="9.2.0" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="9.2.0" />

@@ -1,17 +1,10 @@
 ﻿using Consolidation.Application;
-using Consolidation.Application.Responses;
 using Consolidation.Domain.Entities;
 using Consolidation.Domain.Interfaces;
-using Consolidation.Infrastructure;
 using Consolidation.Infrastructure.Interfaces;
-using Consolidation.Infrastructure.Repository;
 using Moq;
 using Shared.Domain.Entities;
 using Shared.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ConsolidationTests
 {
@@ -20,6 +13,7 @@ namespace ConsolidationTests
         private readonly Mock<IDailyConsolidateRepository> _mockDailyConsolidateRepository;
         private readonly Mock<IProcessedEventRepository> _mockProcessedEventRepository;
         private readonly Mock<IConsolidateUnitOfWork> _mockConsolidateUnitOfWork;
+
         private readonly ConsolidateManager _consolidateManager;
 
         public ConsolidateManagerTests()
@@ -36,38 +30,35 @@ namespace ConsolidationTests
         [Fact]
         public async Task ConsolidateTransaction_has_Success()
         {
-
             _mockProcessedEventRepository.Setup(s => s.IsProcessedAsync(It.IsAny<Guid>())).ReturnsAsync(false);
-            _mockConsolidateUnitOfWork.Setup(s => s.DailyConsolidateRepository.Process(It.IsAny<DateOnly>(), It.IsAny<decimal>()));
-            _mockConsolidateUnitOfWork.Setup(s => s.ProcessedEventRepository.RegisterProcessedAsync(It.IsAny<Guid>()));
-            _mockConsolidateUnitOfWork.Setup(s => s.SaveChangesAsync());
+            _mockDailyConsolidateRepository.Setup(s=> s.Process(It.IsAny<DateOnly>(), It.IsAny<decimal>()));
+            _mockProcessedEventRepository.Setup(s=> s.RegisterProcessedAsync(It.IsAny<Guid>()));
+            _mockConsolidateUnitOfWork.Setup(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task>>())).Returns((Func<Task> action) => action());
 
             var processTransaction = new ProcessTransaction(Guid.NewGuid(), DateOnly.Parse("2026-10-10"), TransactionType.Debit, 10, DateTime.UtcNow);
 
             await _consolidateManager.ConsolidateTransaction(processTransaction);
 
             _mockProcessedEventRepository.Verify(s => s.IsProcessedAsync(It.IsAny<Guid>()), Times.Once);
-            _mockConsolidateUnitOfWork.Verify(s => s.DailyConsolidateRepository.Process(It.IsAny<DateOnly>(), It.IsAny<decimal>()), Times.Once);
-            _mockConsolidateUnitOfWork.Verify(s => s.ProcessedEventRepository.RegisterProcessedAsync(It.IsAny<Guid>()), Times.Once);
-            _mockConsolidateUnitOfWork.Verify(s => s.SaveChangesAsync(),Times.Once);
+            _mockDailyConsolidateRepository.Verify(s => s.Process(It.IsAny<DateOnly>(), It.IsAny<decimal>()), Times.Once);
+            _mockProcessedEventRepository.Verify(s => s.RegisterProcessedAsync(It.IsAny<Guid>()), Times.Once);
         }
 
         [Fact]
         public async Task ConsolidateTransaction_with_duplicated_idempotency()
         {
             _mockProcessedEventRepository.Setup(s => s.IsProcessedAsync(It.IsAny<Guid>())).ReturnsAsync(true);
-            _mockConsolidateUnitOfWork.Setup(s => s.DailyConsolidateRepository.Process(It.IsAny<DateOnly>(), It.IsAny<decimal>()));
-            _mockConsolidateUnitOfWork.Setup(s => s.ProcessedEventRepository.RegisterProcessedAsync(It.IsAny<Guid>()));
-            _mockConsolidateUnitOfWork.Setup(s => s.SaveChangesAsync());
+            _mockDailyConsolidateRepository.Setup(s => s.Process(It.IsAny<DateOnly>(), It.IsAny<decimal>()));
+            _mockProcessedEventRepository.Setup(s => s.RegisterProcessedAsync(It.IsAny<Guid>()));
+            _mockConsolidateUnitOfWork.Setup(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task>>())).Returns((Func<Task> action) => action());
 
             var processTransaction = new ProcessTransaction(Guid.NewGuid(), DateOnly.Parse("2026-10-10"), TransactionType.Debit, 10, DateTime.UtcNow);
 
             await _consolidateManager.ConsolidateTransaction(processTransaction);
 
             _mockProcessedEventRepository.Verify(s => s.IsProcessedAsync(It.IsAny<Guid>()), Times.Once);
-            _mockConsolidateUnitOfWork.Verify(s => s.DailyConsolidateRepository.Process(It.IsAny<DateOnly>(), It.IsAny<decimal>()), Times.Never);
-            _mockConsolidateUnitOfWork.Verify(s => s.ProcessedEventRepository.RegisterProcessedAsync(It.IsAny<Guid>()), Times.Never);
-            _mockConsolidateUnitOfWork.Verify(s => s.SaveChangesAsync(), Times.Never);
+            _mockDailyConsolidateRepository.Verify(s => s.Process(It.IsAny<DateOnly>(), It.IsAny<decimal>()), Times.Never);
+            _mockProcessedEventRepository.Verify(s => s.RegisterProcessedAsync(It.IsAny<Guid>()), Times.Never);
         }
 
         [Fact]
@@ -98,5 +89,30 @@ namespace ConsolidationTests
             Assert.False(response.Success);
         }
 
+        [Theory]
+        [InlineData (TransactionType.Credit)]
+        [InlineData (TransactionType.Debit)]
+        public async Task ResolveAmount_has_Success(TransactionType type)
+        {
+            var processTransaction = new ProcessTransaction(
+            
+                Guid.NewGuid(),
+                DateOnly.Parse("2026-10-10"),
+                type,
+                100,
+                DateTime.UtcNow
+
+            );
+
+            var amount = ConsolidateManager.ResolveAmount(processTransaction);
+
+            var isValid = type switch
+            {
+                TransactionType.Credit => amount > 0,
+                TransactionType.Debit => amount < 0,
+                _ => false
+            };
+            Assert.True(isValid);
+        }
     }
 }

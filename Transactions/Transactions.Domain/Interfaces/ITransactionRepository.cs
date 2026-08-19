@@ -8,5 +8,6 @@ namespace Transactions.Domain.Interfaces
     public interface ITransactionRepository
     {
         Task<Guid> Create(Transaction transaction);
+        Task AddAsync(Transaction transaction);
     }
 }

@@ -6,6 +6,7 @@ using Transactions.Application.Interfaces;
 using Transactions.Application.Responses;
 using Transactions.Domain.Entities;
 using Transactions.Domain.Interfaces;
+using Transactions.Infrastructure.Interfaces;
 
 namespace Transactions.Application
 {
@@ -13,13 +14,17 @@ namespace Transactions.Application
     {
         private readonly ITransactionRepository _transactionRepository;
         private readonly IPublishEndpoint _publishEndpoint;
+        private readonly ITransactionUnitOfWork _transactionUnitOfWork;
 
         public TransactionManager(
             ITransactionRepository transactionRepository, 
-            IPublishEndpoint publishEndpoint)
+            IPublishEndpoint publishEndpoint
+            , ITransactionUnitOfWork transactionUnitOfWork
+            )
         {
             _transactionRepository = transactionRepository;
             _publishEndpoint = publishEndpoint;
+            _transactionUnitOfWork = transactionUnitOfWork;
         }
 
         public async Task<TransactionResponse> RegisterTransaction(RegisterTransactionDTO registerTransactionDTO)
@@ -28,9 +33,11 @@ namespace Transactions.Application
             {
                 var transaction = Transaction.Create(registerTransactionDTO.Date, registerTransactionDTO.Type, registerTransactionDTO.Amount, registerTransactionDTO.Description);
 
-                transaction.Id = await _transactionRepository.Create(transaction);
+                await _transactionRepository.AddAsync(transaction);
 
                 await PublishTransactionAsync(transaction);
+
+                await _transactionUnitOfWork.SaveChangesAsync();
 
                 return new TransactionResponse
                 {
@@ -55,7 +62,6 @@ namespace Transactions.Application
             var message = new ProcessTransaction(Guid.NewGuid(), transaction.Date, transaction.Type, transaction.Amount, DateTime.UtcNow);
 
             await _publishEndpoint.Publish(message);
-            
         }
     }
 }

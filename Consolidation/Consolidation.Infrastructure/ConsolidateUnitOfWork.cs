@@ -1,9 +1,7 @@
 ﻿using Consolidation.Domain.Interfaces;
 using Consolidation.Infrastructure.Interfaces;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Consolidation.Infrastructure
 {
@@ -12,20 +10,35 @@ namespace Consolidation.Infrastructure
 
         private readonly ConsolidatesDbContext _consolidatesDbContext;
 
-        public ConsolidateUnitOfWork(ConsolidatesDbContext consolidatesDbContext, IDailyConsolidateRepository dailyConsolidateRepository, IProcessedEventRepository processedEventRepository)
+        public ConsolidateUnitOfWork(ConsolidatesDbContext consolidatesDbContext)
         {
             _consolidatesDbContext = consolidatesDbContext;
-            DailyConsolidateRepository = dailyConsolidateRepository;
-            ProcessedEventRepository = processedEventRepository;
         }
 
-        public IDailyConsolidateRepository DailyConsolidateRepository { get; }
-
-        public IProcessedEventRepository ProcessedEventRepository { get; }
-
-        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        public async Task ExecuteInTransactionAsync(Func<Task> action)
         {
-            return await _consolidatesDbContext.SaveChangesAsync(cancellationToken);
+            var strategy = _consolidatesDbContext.Database.CreateExecutionStrategy();
+
+            await strategy.ExecuteAsync(async () =>
+            {
+                await using var transaction =
+                    await _consolidatesDbContext.Database.BeginTransactionAsync();
+
+                try
+                {
+                    await action();
+
+                    await _consolidatesDbContext.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+
+                    throw;
+                }
+            });
         }
     }
 }

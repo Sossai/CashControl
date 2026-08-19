@@ -1,9 +1,6 @@
 ﻿using Consolidation.Domain.Entities;
 using Consolidation.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Consolidation.Infrastructure.Repository
 {
@@ -25,16 +22,6 @@ namespace Consolidation.Infrastructure.Repository
 
         public async Task Process(DateOnly date, decimal amount)
         {
-            //var affectedRows = await _consolidatesDbContext.DailyConsolidate
-            //    .Where(x => x.Date == date)
-            //    .ExecuteUpdateAsync(setters => setters
-            //        .SetProperty(
-            //            x => x.AccumulatedBalance,
-            //            x => x.AccumulatedBalance + amount)
-            //        .SetProperty(
-            //            x => x.UpdatedAt,
-            //            DateTime.UtcNow));
-
             var now = DateTime.UtcNow;
 
             //to prevent competition

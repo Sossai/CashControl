@@ -1,10 +1,6 @@
 ﻿using Consolidation.Domain.Entities;
 using Consolidation.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Consolidation.Infrastructure.Repository
 {
@@ -31,7 +27,6 @@ namespace Consolidation.Infrastructure.Repository
                 ProcessedAt = DateTime.UtcNow
             };
             _consolidatesDbContext.ProcessedEvent.Add(processedEvent);
-            await _consolidatesDbContext.SaveChangesAsync();
         }
     }
 }

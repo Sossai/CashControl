@@ -23,24 +23,32 @@
    git clone https://github.com/Sossai/CashControl
    ```
 
-2. **Subir a infraestrutura:**
+2. **Subir docker contendo a estrutura de banco (PostgreSQL) e mensageria (RabbitMQ ):**
    ```bash
    docker compose up -d
    ```
 
-3. **Configure o Visual Studio para executar múltiplos startups:**
+3. **Abrir o Package Manager Console do Visual Studio e aplicar as migrações:**
+   ```bash
+   Update-Database -Project Transactions.Infrastructure -StartupProject Transactions.Api	
+   Update-Database -Project Consolidation.Infrastructure -StartupProject Consolidation.Api
+   ```
+
+   ![Estrutura de banco criada](./assets/estrutura_banco)
+
+4. **Configure o Visual Studio para executar múltiplos startups:**
 
   ![Acesse o menu](./assets/startup_1.png)
 
   ![Selecione as aplicações](./assets/startup_2.png)
 
-4. **Execute a aplicação: F5 no Visual Studio**
+5. **Execute a aplicação: F5 no Visual Studio**
 
 Swagger : 
 - registro das transações => http://localhost:5098/swagger/index.html 
 - consulta consolidado : http://localhost:5198/swagger/index.html
 
-5. **Para enviar uma transação, acesse o swagger da aplicação Transactions.Api e clique em "Try it out" em seguida altere os valores como o exemplo abaixo e clique em Execute.**
+6. **Para enviar uma transação, acesse o swagger da aplicação Transactions.Api e clique em "Try it out" em seguida altere os valores como o exemplo abaixo e clique em Execute.**
 
    ![Execute](./assets/transactions_api_1.png)
 
@@ -58,9 +66,13 @@ Swagger :
    type = 2 ==> Debit
    ```
 
-6. **Para consultar um valor consolidado, acesse o swagger da aplicação Consolidation.Api e clique em "Try it out" em seguida preencha o campo com a data que deseja consultar e clique em Execute**
+7. **Para consultar um valor consolidado, acesse o swagger da aplicação Consolidation.Api e clique em "Try it out" em seguida preencha o campo com a data que deseja consultar e clique em Execute**
 
 ![Execute](./assets/consolidation_api_1.png)
+
+   ```bash
+   2026-08-16
+   ```
 
 ---
 
@@ -81,10 +93,10 @@ src/Consolidation
 src/Shared
  ├── Shared
 tests/
- └── UnitTests
+ └── TransactionTests
+ └── ConsolidationTests
 
 ```
-
 
 
 ## 📦 Desenho da solução
@@ -95,14 +107,14 @@ flowchart TD
 
     subgraph TX["Transactions context"]
         TxApi["Transactions.Api<br/>POST /transactions"]
-        TxDb[("cashcontrol DB<br/>Transactions")]
+        TxDb[("cashcontroldb<br/>Transactions")]
     end
 
     Queue{{"RabbitMQ<br/>"}}
 
     subgraph CONS["Consolidation context"]
         Worker["Consolidation.Worker<br/>"]
-        ConDb[("cashcontrol DB<br/>DailyConsolidate + ProcessedEvent")]
+        ConDb[("cashcontroldb<br/>DailyConsolidate + ProcessedEvent")]
         ConApi["Consolidation.Api<br/>GET /Consolidate"]
     end
 
@@ -125,15 +137,32 @@ flowchart TD
 ```
 ---
 
+## 📌 Fluxo da solução e recursos utilizados
+1. Aplicação Transaction.Api recebe uma requisição **HTTP POST** em /Transactions informando o valor e o tipo de operação (débito ou crédito).
+2. Valida a requisição utilizando **FluentValidation**.
+3. Registra tanto requisição quanto a mensagem a ser enviada, na mensageria, no banco **Postgrees**. Utilizando **pattern Outbox**, implementado pelo **RabbitMQ**, garantimos que toda informação inserida no sistema será publicada na mensageria.
+4. Aplicação Consolidation.Worker consome a mensagem, valida Idempotência e insere/atualiza o saldo diário no banco.
+5. Para recuperar o valor consolidado, podemos fazer uma requisição **HTTP GET** em /Consolidate passando a data desejada.
+6. ** Regras de Resiliência implementadas **
+- Retry exponencial no RabbitMQ.
+- Polly ao inserir registros no banco.
+
+---
+
+## 💻 Healthcheck para verificar status das aplicações e infra
+```bash
+Transactions Api => http://localhost:5098/health/ready
+Copnsolidation Api => http://localhost:5198/health/ready
+RabbitMq Consumer => http://localhost:5298/health/ready
+```
+---
 ## 📋 Melhorias e débitos técnicos
 
 ```text
-1. **Implementar o pattern Transacional outbox:** Gravar em banco tanto o lançamento(transaction) quanto o evento na mesma transação. Um processo rodando em background recupera os evento do banco e publica na mensageria. 
-Objetivo de garantir que tudo que foi persistido no banco Transaction seja publicado na mensageria.
-2. **Implementar uso do Redis:** Salvar o valor consolidado no Redis para um melhor desempenho e não precisa bater no banco constantemente.
-3. **Implementar DLQ:** Implementar uso da Dead Letter Queue.
-5. **Logs e Observabilidade:**
-6. **Controle de cobertura de código:**
-7. **Aplicar regra de TTL no banco para evitar crescimento sem controle:**
-8. **Implementar controle de autenticação e autorizacão:** 
+1. **Implementar uso do Redis:** Salvar o valor consolidado no Redis para um melhor desempenho e não precisar acessar o banco constantemente.
+2. **Implementar DLQ:** Implementar uso da Dead Letter Queue.
+3. **Logs e Observabilidade:**
+4. **Controle de cobertura de código:**
+5. **Aplicar regra de TTL no banco para evitar crescimento sem controle:**
+6. **Implementar controle de autenticação e autorizacão:** 
 ```
