@@ -23,34 +23,17 @@
    git clone https://github.com/Sossai/CashControl
    ```
 
-2. **Subir docker contendo a estrutura de banco (PostgreSQL) e mensageria (RabbitMQ):**
+2. **Subir docker e deployar a solução :**
    ```bash
-   docker compose up -d
+   docker compose up -d --build
    ```
 
-   ![Docker](./assets/docker.png)
+   ![Docker](./assets/docker2.png)
    
-3. **Abrir o Package Manager Console do Visual Studio e aplicar as migrações:**
-   ```bash
-   Update-Database -Project Transactions.Infrastructure -StartupProject Transactions.Api	
-   Update-Database -Project Consolidation.Infrastructure -StartupProject Consolidation.Api
-   ```
-
-   ![Estrutura de banco criada](./assets/estrutura_banco.png)
-
-4. **Configure o Visual Studio para executar múltiplos startups:**
-
-  ![Acesse o menu](./assets/startup_1.png)
-
-  ![Selecione as aplicações](./assets/startup_2.png)
-
-5. **Execute a aplicação: F5 no Visual Studio**
-
+3. **Para enviar uma transação, acesse o swagger da aplicação Transactions.Api e clique em "Try it out" em seguida altere os valores como o exemplo abaixo e clique em Execute.**
 Swagger : 
 - registro das transações => http://localhost:5098/swagger/index.html 
 - consulta consolidado : http://localhost:5198/swagger/index.html
-
-6. **Para enviar uma transação, acesse o swagger da aplicação Transactions.Api e clique em "Try it out" em seguida altere os valores como o exemplo abaixo e clique em Execute.**
 
    ![Execute](./assets/transactions_api_1.png)
 
@@ -68,7 +51,7 @@ Swagger :
    type = 2 ==> Debit
    ```
 
-7. **Para consultar um valor consolidado, acesse o swagger da aplicação Consolidation.Api e clique em "Try it out" em seguida preencha o campo com a data que deseja consultar e clique em Execute**
+4. **Para consultar um valor consolidado, acesse o swagger da aplicação Consolidation.Api e clique em "Try it out" em seguida preencha o campo com a data que deseja consultar e clique em Execute**
 
 ![Execute](./assets/consolidation_api_1.png)
 
@@ -142,7 +125,7 @@ flowchart TD
 ## 📌 Fluxo da solução e recursos utilizados
 1. Aplicação Transaction.Api recebe uma requisição **HTTP POST** em /Transactions informando o valor e o tipo de operação (débito ou crédito).
 2. Valida a requisição utilizando **FluentValidation**.
-3. Registra tanto requisição quanto a mensagem a ser enviada, na mensageria, no banco **Postgrees**. Utilizando **pattern Outbox**, implementado pelo **RabbitMQ**, garantimos que toda informação inserida no sistema será publicada na mensageria.
+3. Registra tanto requisição quanto a mensagem a ser enviada, na mensageria, no banco **Postgrees**. Utilizando **pattern Transactional Outbox**, implementado pelo **RabbitMQ**, garantimos que toda informação inserida no sistema será publicada na mensageria.
 4. Aplicação Consolidation.Worker consome a mensagem, valida Idempotência e insere/atualiza o saldo diário no banco.
 5. Para recuperar o valor consolidado, podemos fazer uma requisição **HTTP GET** em /Consolidate passando a data desejada.
 6. ** Regras de Resiliência implementadas **

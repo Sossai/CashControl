@@ -20,7 +20,7 @@ namespace Consolidation.Worker.HealthCheck
             using var listener = new HttpListener();
 
             listener.Prefixes.Add(
-                "http://localhost:5298/");
+                "http://+:5298/");
 
             listener.Start();
 

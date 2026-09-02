@@ -20,6 +20,8 @@ builder.Services.AddScoped<IConsolidateManager, ConsolidateManager>();
 builder.Services.AddScoped<IProcessedEventRepository, ProcessedEventRepository>();
 builder.Services.AddScoped<IConsolidateUnitOfWork, ConsolidateUnitOfWork>();
 
+var rabbitMqHost = builder.Configuration["RabbitMq:Host"] ?? "localhost";
+
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<TransactionConsumer>();
@@ -27,7 +29,7 @@ builder.Services.AddMassTransit(x =>
     x.UsingRabbitMq((context, cfg) =>
     {
         cfg.Host(
-            "localhost",
+            rabbitMqHost,
             "/",
             h =>
             {
@@ -60,12 +62,6 @@ builder.Services.AddDbContext<ConsolidatesDbContext>(options =>
 builder.Services.AddHostedService<HealthCheckServer>();
 builder.Services.AddHealthChecks();
 
-
-
-
-
-
 var host = builder.Build();
-
 
 host.Run();

@@ -1,4 +1,58 @@
 services:
+  transactions_api:
+    build:
+      context: .
+      dockerfile: Transactions/Transactions.Api/Dockerfile
+    container_name: transactions_api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=cashcontroldb;Username=cashcontrol;Password=cashcontrol"
+      RabbitMq__Host: rabbitmq
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - cashcontrol-network
+    ports:
+      - "5098:8080"
+ 
+  consolidation_api:
+    build:
+      context: .
+      dockerfile: Consolidation/Consolidation.Api/Dockerfile
+    container_name: consolidation_api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=cashcontroldb;Username=cashcontrol;Password=cashcontrol"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - cashcontrol-network
+    ports:
+      - "5198:8080"
+ 
+  consolidation_worker:
+    build:
+      context: .
+      dockerfile: Consolidation/Consolidation.Worker/Dockerfile
+    container_name: consolidation_worker
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=cashcontroldb;Username=cashcontrol;Password=cashcontrol"
+      RabbitMq__Host: rabbitmq
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - cashcontrol-network
+    ports:
+      - "5298:5298" 
+
   postgres:
     image: postgres:16-alpine
     container_name: cashcontrol-postgres

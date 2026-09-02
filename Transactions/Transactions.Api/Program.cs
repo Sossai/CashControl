@@ -55,6 +55,8 @@ builder.Services.AddDbContext<TransactionsDbContext>(options =>
         });
 });
 
+var rabbitMqHost = builder.Configuration["RabbitMq:Host"] ?? "localhost";
+
 builder.Services.AddMassTransit(x =>
 {
     x.AddEntityFrameworkOutbox<TransactionsDbContext>(o =>
@@ -66,7 +68,7 @@ builder.Services.AddMassTransit(x =>
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", "/", h =>
+        cfg.Host(rabbitMqHost, "/", h =>
         {
             h.Username("cashcontrol");
             h.Password("cashcontrol");
@@ -88,11 +90,11 @@ builder.Services.AddMassTransit(x =>
 var app = builder.Build();
 
 
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();   // Serves the generated OpenAPI spec as a JSON endpoint
     app.UseSwaggerUI(); // Serves the interactive web UI
-}
+//}
 
 // Configure the HTTP request pipeline.
 

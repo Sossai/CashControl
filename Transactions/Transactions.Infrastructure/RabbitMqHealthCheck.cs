@@ -21,7 +21,7 @@ namespace Transactions.Infrastructure
             {
                 var factory = new ConnectionFactory
                 {
-                    HostName = "localhost",
+                    HostName = _configuration["RabbitMq:Host"] ?? "localhost",
                     UserName = "cashcontrol",
                     Password = "cashcontrol"
                 };
