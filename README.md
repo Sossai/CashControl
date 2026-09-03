@@ -29,8 +29,16 @@
    ```
 
    ![Docker](./assets/docker2.png)
+
+3. **Abrir o Package Manager Console do Visual Studio e aplicar as migrações:**
+   ```bash
+   Update-Database -Project Transactions.Infrastructure -StartupProject Transactions.Api	
+   Update-Database -Project Consolidation.Infrastructure -StartupProject Consolidation.Api
+   ```
+
+   ![Estrutura de banco criada](./assets/estrutura_banco.png)
    
-3. **Para enviar uma transação, acesse o swagger da aplicação Transactions.Api e clique em "Try it out" em seguida altere os valores como o exemplo abaixo e clique em Execute.**
+4. **Para enviar uma transação, acesse o swagger da aplicação Transactions.Api e clique em "Try it out" em seguida altere os valores como o exemplo abaixo e clique em Execute.**
 Swagger : 
 - registro das transações => http://localhost:5098/swagger/index.html 
 - consulta consolidado : http://localhost:5198/swagger/index.html
@@ -51,7 +59,7 @@ Swagger :
    type = 2 ==> Debit
    ```
 
-4. **Para consultar um valor consolidado, acesse o swagger da aplicação Consolidation.Api e clique em "Try it out" em seguida preencha o campo com a data que deseja consultar e clique em Execute**
+5. **Para consultar um valor consolidado, acesse o swagger da aplicação Consolidation.Api e clique em "Try it out" em seguida preencha o campo com a data que deseja consultar e clique em Execute**
 
 ![Execute](./assets/consolidation_api_1.png)
 
